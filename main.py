@@ -59,22 +59,37 @@ def begin_game(update, context):
 
     # Get player roles, shuffle them and send to all players
     players = context.bot_data['mafioso']
-    num = len(players)
-    roles = [ ROLES[i] for i in range(num) ]
     random.shuffle(roles)
 
-    for player, role in zip(players, roles):
+    for player, role in zip(players, ROLES):
         context.bot.send_message(chat_id=player, text=f"Player {player} has role {role}")
 
     # Send message for success
     context.bot.send_message(chat_id=update.effective_chat.id, text="Roles were send")
 
+def poll(update, context):
+    """Poll answers from users"""
+    print(context.bot_data)
+
+    answers = [ "JAA", "EI", "TYHJÄ", "POISSA" ]
+    question = update.message.text
+    message = context.bot.send_poll(update.effective_user.id, question, answers)
+
+    data = { message.poll.id: { "answers": answers, "message_id": message.message_id,
+                                 "chat_id": update.effective_chat.id, "answers": 0 } }
+
+    if 'poll' not in context.bot_data:
+        context.bot_data['poll'] = dict()
+    context.bot_data['poll'].update(data)
+
 
 def help_handler(update, context):
+    """Help message of bot"""
     context.bot.send_message(chat_id=update.effective_chat.id, text="List of commands\n"
-            "/start, /new, /join, /begin, /help")
+            "/start, /new, /join, /begin, /poll, /help")
 
 def main():
+    # Get token from arguments
     if len(sys.argv) > 1:
         token = sys.argv[1]
     else:
@@ -88,6 +103,7 @@ def main():
     dispatcher.add_handler(CommandHandler('new', new_game))
     dispatcher.add_handler(CommandHandler('join', join_game))
     dispatcher.add_handler(CommandHandler('begin', begin_game))
+    dispatcher.add_handler(CommandHandler('poll', poll))
     dispatcher.add_handler(CommandHandler('help', help_handler))
 
     updater.start_polling()
