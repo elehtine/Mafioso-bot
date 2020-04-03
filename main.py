@@ -37,7 +37,7 @@ def join_game(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Game is not created yet")
         return
 
-    user = update.effective_user.id
+    user = update.effective_user
     data = context.bot_data['mafioso']
 
     # check if already joined
@@ -59,10 +59,16 @@ def begin_game(update, context):
 
     # Get player roles, shuffle them and send to all players
     players = context.bot_data['mafioso']
-    random.shuffle(roles)
-
+    random.shuffle(players)
     for player, role in zip(players, ROLES):
-        context.bot.send_message(chat_id=player, text=f"Player {player} has role {role}")
+        context.bot.send_message(chat_id=player.id, text=f"Player {player.username} has role {role}")
+
+    # Tell player names
+    names = map(lambda x: x.username, players)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=f"Players are: {', '.join(names)}")
+
+    # Delete game data
+    del context.bot_data['mafioso']
 
     # Send message for success
     context.bot.send_message(chat_id=update.effective_chat.id, text="Roles were send")
@@ -75,7 +81,7 @@ def poll(update, context):
     else:
         question = "EI KYSYSMYSTÄ"
     answers = [ "JAA", "EI", "TYHJÄ", "POISSA" ]
-    context.bot.send_poll(update.effective_user.id, question, answers)
+    context.bot.send_poll(update.effective_chat.id, question, answers)
 
 
 def help_handler(update, context):
