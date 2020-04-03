@@ -69,18 +69,13 @@ def begin_game(update, context):
 
 def poll(update, context):
     """Poll answers from users"""
-    print(context.bot_data)
 
+    if len(context.args) > 0:
+        question = ' '.join(context.args)
+    else:
+        question = "EI KYSYSMYSTÄ"
     answers = [ "JAA", "EI", "TYHJÄ", "POISSA" ]
-    question = update.message.text
-    message = context.bot.send_poll(update.effective_user.id, question, answers)
-
-    data = { message.poll.id: { "answers": answers, "message_id": message.message_id,
-                                 "chat_id": update.effective_chat.id, "answers": 0 } }
-
-    if 'poll' not in context.bot_data:
-        context.bot_data['poll'] = dict()
-    context.bot_data['poll'].update(data)
+    context.bot.send_poll(update.effective_user.id, question, answers)
 
 
 def help_handler(update, context):
